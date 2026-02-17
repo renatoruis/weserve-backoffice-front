@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import useAuthFetch from "@/hooks/useAuthFetch";
 
 export interface UploadedFile {
   url: string;
@@ -57,6 +58,7 @@ export default function FileUpload({
   accept = ".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.webp,.gif",
   hint = "PDF, DOC, DOCX, PPT, PPTX, Images (max 10MB each)",
 }: FileUploadProps) {
+  const { adminFetch } = useAuthFetch();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -86,7 +88,7 @@ export default function FileUpload({
         const formData = new FormData();
         formData.append("file", file);
 
-        const res = await fetch("/api/proxy/admin/upload", {
+        const res = await adminFetch("/upload", {
           method: "POST",
           body: formData,
         });

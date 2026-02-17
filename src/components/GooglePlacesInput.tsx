@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import useAuthFetch from "@/hooks/useAuthFetch";
 
 interface GooglePlacesInputProps {
   value: string;
   onChange: (value: string) => void;
   onPlaceSelect: (place: { address: string; lat: number; lng: number }) => void;
+  label?: string;
 }
 
 interface Prediction {
@@ -17,13 +19,16 @@ export default function GooglePlacesInput({
   value,
   onChange,
   onPlaceSelect,
+  label = "Address",
 }: GooglePlacesInputProps) {
+  const { adminFetch } = useAuthFetch();
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (value.length < 3) {
+    if (!isTyping || value.length < 3) {
       setPredictions([]);
       return;
     }
@@ -31,8 +36,8 @@ export default function GooglePlacesInput({
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `/api/proxy/admin/google/places/autocomplete?input=${encodeURIComponent(value)}`
+        const res = await adminFetch(
+          `/google/places/autocomplete?input=${encodeURIComponent(value)}`
         );
         const data = await res.json();
         setPredictions(data.predictions || []);
@@ -43,16 +48,17 @@ export default function GooglePlacesInput({
     }, 400);
 
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
-  }, [value]);
+  }, [value, isTyping]);
 
   const handleSelect = async (prediction: Prediction) => {
+    setIsTyping(false);
     onChange(prediction.description);
     setShowDropdown(false);
     setPredictions([]);
 
     try {
-      const res = await fetch(
-        `/api/proxy/admin/google/places/details?place_id=${encodeURIComponent(prediction.place_id)}`
+      const res = await adminFetch(
+        `/google/places/details?place_id=${encodeURIComponent(prediction.place_id)}`
       );
       const data = await res.json();
       if (data.result?.geometry?.location) {
@@ -63,18 +69,22 @@ export default function GooglePlacesInput({
         });
       }
     } catch {
-      // fallback: at least set the address
       onPlaceSelect({ address: prediction.description, lat: 0, lng: 0 });
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsTyping(true);
+    onChange(e.target.value);
+  };
+
   return (
     <div className="relative">
-      <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <input
         type="text"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={handleInputChange}
         onFocus={() => predictions.length > 0 && setShowDropdown(true)}
         onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
         placeholder="Start typing an address..."

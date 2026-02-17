@@ -1,28 +1,45 @@
-import { auth0 } from "@/lib/auth0";
-import { redirect } from "next/navigation";
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/Header";
+"use client";
 
-export default async function DashboardLayout({
+import { useEffect } from "react";
+import { useAuth } from "@/contexts/auth-context";
+import DashboardShell from "./DashboardShell";
+
+function FullScreenSpinner({ message }: { message?: string }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
+      <div className="text-center">
+        <div className="w-8 h-8 border-2 border-gray-300 border-t-[var(--color-primary)] rounded-full animate-spin mx-auto" />
+        {message && (
+          <p className="text-sm text-gray-400 mt-4">{message}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth0.getSession();
+  const { isAuthenticated, isLoading, signIn } = useAuth();
 
-  if (!session) {
-    redirect("/auth/login");
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      signIn();
+    }
+  }, [isLoading, isAuthenticated, signIn]);
+
+  // Still loading auth state
+  if (isLoading) {
+    return <FullScreenSpinner message="Carregando..." />;
   }
 
-  return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header user={session.user} />
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+  // Not authenticated — signIn() effect will redirect, show spinner meanwhile
+  if (!isAuthenticated) {
+    return <FullScreenSpinner message="Redirecionando..." />;
+  }
+
+  return <DashboardShell>{children}</DashboardShell>;
 }

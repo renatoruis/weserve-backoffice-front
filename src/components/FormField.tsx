@@ -1,3 +1,10 @@
+"use client";
+
+/**
+ * Legacy FormField — kept for backward compat.
+ * Prefer using ui/Input components for new code.
+ */
+
 interface FormFieldProps {
   label: string;
   name?: string;
@@ -20,7 +27,7 @@ export default function FormField({
   rows,
 }: FormFieldProps) {
   const baseClass =
-    "w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-opacity-20 focus:border-[var(--color-primary)]";
+    "w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)]";
 
   return (
     <div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import useAuthFetch from "@/hooks/useAuthFetch";
 
 interface ImageUploadProps {
   label: string;
@@ -9,6 +10,7 @@ interface ImageUploadProps {
 }
 
 export default function ImageUpload({ label, value, onChange }: ImageUploadProps) {
+  const { adminFetch } = useAuthFetch();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -35,7 +37,7 @@ export default function ImageUpload({ label, value, onChange }: ImageUploadProps
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("/api/proxy/admin/upload", {
+      const res = await adminFetch("/upload", {
         method: "POST",
         body: formData,
       });

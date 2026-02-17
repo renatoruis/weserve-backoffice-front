@@ -1,111 +1,120 @@
 # Church App Backoffice
 
-Painel de administração para gerir o conteúdo do app da igreja. Construído com Next.js, Tailwind CSS e autenticação via Auth0.
+Painel de administracao para gerir o conteudo do app da igreja. Construido com Next.js, Tailwind CSS e autenticacao via Auth0.
 
 ## Features
 
-- **Dashboard** — Visão geral com contadores de eventos, sermões, pedidos de oração, avisos e assinantes push
-- **Dados da Igreja** — Configuração de nome, logo, endereço (com Google Places), cores do tema, horários de culto, links sociais e URL de doações
-- **Home / Banner** — Gestão do banner principal e controle de live stream (liga/desliga + URL)
-- **Agenda** — CRUD completo de eventos com data, hora, localização (Google Places) e imagem
-- **Sermões** — CRUD de sermões com vídeo do YouTube, tags, data e upload de materiais (PDF, DOC, PPT, imagens)
-- **Avisos** — CRUD de avisos com status de publicação (Published/Draft)
-- **Pedidos de Oração** — Visualização e gestão dos pedidos de oração dos fiéis
-- **Grupos / Células** — CRUD de grupos com líder, dia, horário, localização e descrição
-- **Versões da Bíblia** — Configuração das versões da Bíblia disponíveis no app (integração YouVersion)
-- **Push Notifications** — Envio de notificações push para todos os assinantes do app
-- **Controle de Acesso** — Autenticação Auth0 + autorização por email ou roles
+- **Dashboard** -- Visao geral com contadores de eventos, sermoes, pedidos de oracao, avisos e assinantes push
+- **Church Details** -- Configuracao de nome, logo, endereco (Google Places), cores do tema, horarios de culto, links sociais e URL de doacoes
+- **Home / Banner** -- Gestao do banner principal e controle de live stream
+- **Events** -- CRUD completo de eventos com i18n (PT/EN), data, hora, localizacao e imagem
+- **Sermons** -- CRUD de sermoes com i18n, video do YouTube, tags, data e upload de materiais
+- **Notices** -- CRUD de avisos com i18n e status de publicacao
+- **Prayer Requests** -- Visualizacao e gestao dos pedidos de oracao
+- **Groups / Cells** -- CRUD de grupos com i18n, lider, dia, horario e localizacao
+- **Bible Versions** -- Configuracao das versoes da Biblia disponiveis (integracao YouVersion)
+- **Pages (CMS)** -- CRUD de paginas customizadas com i18n, slug, imagem de capa e ordenacao
+- **Blog** -- CRUD de posts de blog com i18n, autor, tags e data de publicacao
+- **Push Notifications** -- Envio de notificacoes push para todos os assinantes
+- **Access Control** -- Autenticacao Auth0 + autorizacao por email ou roles
 
 ## Stack
 
 - [Next.js 16](https://nextjs.org/) (App Router)
 - [Tailwind CSS 4](https://tailwindcss.com/)
-- [Auth0](https://auth0.com/) (autenticação e autorização)
+- [Auth0](https://auth0.com/) (autenticacao e autorizacao)
 - [TypeScript](https://www.typescriptlang.org/)
 
-## Segurança
+## Architecture
 
-- Todas as chamadas à API backend são feitas via **server-side proxy** (`/api/proxy/admin/...`), de modo que o token de autenticação e a URL do backend nunca são expostos ao browser
-- Nenhuma variável `NEXT_PUBLIC_` contém secrets — a URL da API é apenas server-side (`API_URL`)
-- Middleware protege todas as rotas `/dashboard/*` com verificação de sessão + permissão
-- Autorização por lista de emails (`ALLOWED_EMAILS`) e/ou roles do Auth0 (`admin`)
+- **Design System** (`src/components/ui/`) -- Button, Input, Badge, Skeleton, EmptyState, Pagination
+- **Hooks** (`src/hooks/`) -- `useApi` (GET + paginacao + loading), `useSubmit` (mutation + button lock)
+- **I18n Fields** -- Componente reutilizavel com tabs PT/EN para campos multilingues
+- **Mobile-first** -- Sidebar como drawer no mobile, DataTable como cards, Modal fullscreen
+- **Server-side proxy** -- Todas as chamadas a API passam por `/api/proxy/admin/` (token e URL do backend nunca expostos ao browser)
+
+## Security
+
+- Nenhuma variavel `NEXT_PUBLIC_` contem secrets -- a URL da API e apenas server-side (`API_URL`)
+- Middleware protege todas as rotas `/dashboard/*` com verificacao de sessao + permissao
+- Autorizacao por lista de emails (`ALLOWED_EMAILS`) e/ou roles do Auth0 (`admin`)
 
 ## Setup local
 
 ```bash
-# 1. Clonar e instalar
-git clone <repo-url>
-cd church-app-backoffice
 cp .env.example .env
 pnpm install
-
-# 2. Preencher .env com as credenciais (ver seção abaixo)
-
-# 3. Executar
 pnpm dev
 ```
 
 O app roda em [http://localhost:8001](http://localhost:8001).
 
-## Variáveis de Ambiente
+## Environment Variables
 
-| Variável | Descrição |
+| Variable | Description |
 |---|---|
-| `AUTH0_SECRET` | Secret para encriptar cookies de sessão (min 32 chars) |
-| `AUTH0_DOMAIN` | Domínio do tenant Auth0 |
-| `AUTH0_CLIENT_ID` | Client ID da aplicação Auth0 |
-| `AUTH0_CLIENT_SECRET` | Client Secret da aplicação Auth0 |
+| `AUTH0_SECRET` | Secret para encriptar cookies de sessao (min 32 chars) |
+| `AUTH0_DOMAIN` | Dominio do tenant Auth0 |
+| `AUTH0_CLIENT_ID` | Client ID da aplicacao Auth0 |
+| `AUTH0_CLIENT_SECRET` | Client Secret da aplicacao Auth0 |
 | `AUTH0_AUDIENCE` | Audience da API Auth0 |
 | `APP_BASE_URL` | URL base do app (ex: `http://localhost:8001`) |
 | `API_URL` | URL do backend da API (server-side only) |
-| `ALLOWED_EMAILS` | Lista de emails permitidos, separados por vírgula |
+| `ALLOWED_EMAILS` | Lista de emails permitidos, separados por virgula |
 
-## Auth0 Setup
+## Deploy (Vercel)
 
-1. Criar Application (Regular Web App) no Auth0
-2. Configurar callback URL: `{APP_BASE_URL}/auth/callback`
-3. Configurar logout URL: `{APP_BASE_URL}`
-4. Criar API no Auth0 com identifier correspondente ao `AUTH0_AUDIENCE`
-5. Preencher `.env` com credenciais
-
-## Deploy na Vercel
-
-1. Conectar o repositório na [Vercel](https://vercel.com)
+1. Conectar o repositorio na [Vercel](https://vercel.com)
 2. Framework Preset: **Next.js** (detectado automaticamente)
-3. Adicionar todas as variáveis de ambiente (ver tabela acima) no painel da Vercel em **Settings > Environment Variables**
-4. Atualizar `APP_BASE_URL` para o domínio de produção (ex: `https://admin.suaigreja.com`)
-5. Atualizar as URLs de callback e logout no Auth0 para o domínio de produção
+3. Adicionar todas as variaveis de ambiente no painel da Vercel
+4. Atualizar `APP_BASE_URL` para o dominio de producao
+5. Atualizar as URLs de callback e logout no Auth0
 6. Deploy!
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── api/proxy/admin/[...path]/   # Proxy server-side para a API
+│   ├── api/proxy/admin/[...path]/   # Server-side API proxy
 │   ├── dashboard/
-│   │   ├── agenda/                   # Eventos
-│   │   ├── avisos/                   # Avisos
-│   │   ├── biblia/                   # Versões da Bíblia
-│   │   ├── grupos/                   # Grupos / Células
+│   │   ├── DashboardShell.tsx        # Client shell (sidebar + header)
+│   │   ├── layout.tsx                # Auth guard
+│   │   ├── page.tsx                  # Dashboard home
+│   │   ├── agenda/                   # Events CRUD
+│   │   ├── avisos/                   # Notices CRUD
+│   │   ├── biblia/                   # Bible Versions CRUD
+│   │   ├── blog/                     # Blog CRUD
+│   │   ├── grupos/                   # Groups CRUD
 │   │   ├── home-content/             # Banner + Live
-│   │   ├── igreja/                   # Dados da igreja
-│   │   ├── oracoes/                  # Pedidos de oração
+│   │   ├── igreja/                   # Church settings
+│   │   ├── oracoes/                  # Prayer requests
+│   │   ├── pages/                    # CMS Pages CRUD
 │   │   ├── push/                     # Push Notifications
-│   │   └── sermoes/                  # Sermões
-│   ├── unauthorized/                 # Página de acesso negado
+│   │   └── sermoes/                  # Sermons CRUD
+│   ├── unauthorized/                 # Access denied
 │   └── page.tsx                      # Login
-├── components/                       # Componentes reutilizáveis
-│   ├── DataTable.tsx                 # Tabela genérica com Edit/Delete
-│   ├── FileUpload.tsx                # Upload de arquivos
-│   ├── FormField.tsx                 # Campo de formulário
-│   ├── GooglePlacesInput.tsx         # Input com autocomplete de endereço
-│   ├── Header.tsx                    # Header do dashboard
-│   ├── ImageUpload.tsx               # Upload de imagens
-│   ├── Modal.tsx                     # Modal reutilizável
-│   └── Sidebar.tsx                   # Sidebar de navegação
+├── components/
+│   ├── ui/                           # Design system
+│   │   ├── Badge.tsx
+│   │   ├── Button.tsx
+│   │   ├── EmptyState.tsx
+│   │   ├── Input.tsx
+│   │   ├── Pagination.tsx
+│   │   └── Skeleton.tsx
+│   ├── DataTable.tsx                 # Table + mobile cards + pagination
+│   ├── FileUpload.tsx                # Multi-file upload
+│   ├── FormField.tsx                 # Simple form field
+│   ├── GooglePlacesInput.tsx         # Address autocomplete
+│   ├── Header.tsx                    # Top bar + hamburger
+│   ├── I18nField.tsx                 # i18n field with PT/EN tabs
+│   ├── ImageUpload.tsx               # Image upload with preview
+│   ├── Modal.tsx                     # Modal (sheet on mobile)
+│   └── Sidebar.tsx                   # Navigation (drawer on mobile)
+├── hooks/
+│   ├── useApi.ts                     # GET + pagination + loading
+│   └── useSubmit.ts                  # Mutation + duplicate guard
 ├── lib/
-│   ├── api.ts                        # Helpers para chamadas à API
-│   └── auth0.ts                      # Configuração do Auth0
-└── middleware.ts                      # Autenticação + autorização
+│   └── auth0.ts                      # Auth0 config
+└── middleware.ts                      # Auth + authorization
 ```
