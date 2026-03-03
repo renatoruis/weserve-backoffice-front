@@ -8,7 +8,6 @@ import {
   DashboardIcon,
   AnalyticsIcon,
   HomeIcon,
-  WidgetsIcon,
   CalendarIcon,
   BookIcon,
   BellIcon,
@@ -52,7 +51,6 @@ const contentSection: MenuSection = {
   title: "Content",
   items: [
     { href: "/dashboard/home-content", label: "Home Content", icon: HomeIcon },
-    { href: "/dashboard/widgets", label: "Home Widgets", icon: WidgetsIcon },
     { href: "/dashboard/agenda", label: "Eventos", icon: CalendarIcon },
     { href: "/dashboard/sermoes", label: "Sermons", icon: BookIcon },
     { href: "/dashboard/avisos", label: "Notices", icon: BellIcon },
