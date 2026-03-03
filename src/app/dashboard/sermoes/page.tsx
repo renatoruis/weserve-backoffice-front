@@ -12,6 +12,7 @@ import Button from "@/components/ui/Button";
 import { useAuth } from "@/contexts/auth-context";
 import { hasMinRole } from "@/lib/permissions";
 import { toDateInputValue } from "@/lib/date";
+import BackButton from "@/components/ui/BackButton";
 
 interface Sermon {
   id: string;
@@ -43,22 +44,6 @@ const emptyForm = {
   og_image_url: "",
 };
 
-/* ── Back button ── */
-
-function BackButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-4"
-    >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M19 12H5" /><polyline points="12 19 5 12 12 5" />
-      </svg>
-      Back
-    </button>
-  );
-}
 
 /* ── Section divider ── */
 function SectionDivider({ title }: { title: string }) {
@@ -291,7 +276,7 @@ export default function SermoesPage() {
 
           {/* ─── Actions ─── */}
           <div className="flex gap-3 pt-2">
-            <Button type="button" variant="secondary" onClick={closeForm}>Cancel</Button>
+            <Button type="button" variant="secondary" onClick={closeForm}>Cancelar</Button>
             <Button type="submit" loading={saving} className="flex-1">
               {editing ? "Save" : "Create"}
             </Button>
@@ -307,7 +292,7 @@ export default function SermoesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl md:text-2xl font-bold">Sermons</h1>
-        {canEdit && <Button onClick={openNew}>+ New Sermon</Button>}
+        {canEdit && <Button onClick={openNew}>+ Novo Sermon</Button>}
       </div>
 
       <DataTable

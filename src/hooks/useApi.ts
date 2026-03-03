@@ -56,7 +56,7 @@ export default function useApi<T>(path: string, options: UseApiOptions = {}): Us
 
     try {
       const separator = path.includes("?") ? "&" : "?";
-      const paginatedPath = `${path}${separator}limit=${limit}&offset=${(page - 1) * limit}`;
+      const paginatedPath = `${path}${separator}limit=${limit}&offset=${(page - 1) * limit}&locale=pt`;
 
       const res = await adminFetch(paginatedPath, { signal: controller.signal });
       if (!res.ok) throw new Error(`Error ${res.status}`);

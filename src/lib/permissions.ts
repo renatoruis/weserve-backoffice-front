@@ -1,4 +1,4 @@
-const ROLE_LEVEL: Record<string, number> = {
+export const ROLE_LEVEL: Record<string, number> = {
   owner: 40,
   admin: 30,
   editor: 20,

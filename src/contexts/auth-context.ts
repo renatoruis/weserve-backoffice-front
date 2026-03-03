@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
+export { ROLE_LEVEL } from "@/lib/permissions";
 
 export interface Church {
   id?: string;
@@ -17,13 +18,6 @@ export interface UserProfile {
   picture?: string;
   is_super_admin: boolean;
 }
-
-export const ROLE_LEVEL: Record<string, number> = {
-  owner: 40,
-  admin: 30,
-  editor: 20,
-  member: 10,
-};
 
 export interface AuthContextValue {
   isAuthenticated: boolean;

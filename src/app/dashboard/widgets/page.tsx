@@ -45,7 +45,7 @@ function widgetTypeLabel(type: string): string {
 }
 
 export default function WidgetsPage() {
-  const { data, loading, refetch } = useApi<Widget>("/home/widgets");
+  const { data, loading, refetch } = useApi<Widget>("/home-widgets");
   const { submit, loading: saving } = useSubmit();
   const { church } = useAuth();
   const canEdit = hasMinRole(church?.role, "editor");
@@ -92,14 +92,14 @@ export default function WidgetsPage() {
     try {
       parsedConfig = JSON.parse(form.config);
     } catch {
-      alert("Invalid JSON in the config field. Please fix it before saving.");
+      alert("JSON inválido no campo de configuração. Por favor corrija antes de guardar.");
       return;
     }
 
     const method = editing ? "PUT" : "POST";
     const url = editing
-      ? `/home/widgets/${editing}`
-      : "/home/widgets";
+      ? `/home-widgets/${editing}`
+      : "/home-widgets";
 
     const res = await submit(url, {
       method,
@@ -119,7 +119,7 @@ export default function WidgetsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await submit(`/home/widgets/${id}`, { method: "DELETE" });
+    const res = await submit(`/home-widgets/${id}`, { method: "DELETE" });
     if (res) refetch();
   };
 
@@ -135,7 +135,7 @@ export default function WidgetsPage() {
     updated[swapIndex] = temp;
     setWidgets(updated);
 
-    await submit("/home/widgets/reorder", {
+    await submit("/home-widgets/reorder", {
       method: "PUT",
       body: { order: updated.map((w) => w.id) },
     });
@@ -180,12 +180,12 @@ export default function WidgetsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl md:text-2xl font-bold">Home Widgets</h1>
-        {canEdit && <Button onClick={openNew}>+ Add Widget</Button>}
+        {canEdit && <Button onClick={openNew}>+ Novo Widget</Button>}
       </div>
 
       {widgets.length === 0 && (
         <div className="text-center py-16 text-gray-400 text-sm">
-          No widgets configured yet. Click &quot;Add Widget&quot; to get started.
+          Nenhum widget configurado. Clique em &quot;+ Novo Widget&quot; para começar.
         </div>
       )}
 
@@ -219,13 +219,13 @@ export default function WidgetsPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="info">{widgetTypeLabel(w.widget_type)}</Badge>
                 <Badge variant={w.active ? "success" : "muted"}>
-                  {w.active ? "Active" : "Inactive"}
+                  {w.active ? "Activo" : "Inactivo"}
                 </Badge>
               </div>
               <p className="text-sm font-medium text-gray-800 mt-1 truncate">
                 {w.title || widgetTypeLabel(w.widget_type)}
               </p>
-              <p className="text-xs text-gray-400">Order: {w.sort_order}</p>
+              <p className="text-xs text-gray-400">Ordem: {w.sort_order}</p>
             </div>
 
             {/* Actions */}
@@ -327,31 +327,31 @@ export default function WidgetsPage() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? "Edit Widget" : "New Widget"}
+        title={editing ? "Editar Widget" : "Novo Widget"}
       >
         <form onSubmit={handleSave} className="space-y-4">
           <InputField
-            label="Title"
+            label="Título"
             value={form.title}
             onChange={(v) => setForm((p) => ({ ...p, title: v }))}
-            placeholder="Optional display title"
+            placeholder="Título de exibição (opcional)"
           />
           <SelectField
-            label="Widget Type"
+            label="Tipo de Widget"
             value={form.widget_type}
             options={WIDGET_TYPES}
             onChange={(v) => setForm((p) => ({ ...p, widget_type: v }))}
           />
           <TextArea
-            label="Config"
+            label="Configuração (JSON)"
             value={form.config}
             onChange={(v) => setForm((p) => ({ ...p, config: v }))}
             rows={4}
-            hint="JSON configuration"
+            hint="Configuração em formato JSON"
             placeholder="{}"
           />
           <InputField
-            label="Sort Order"
+            label="Ordem"
             type="number"
             value={form.sort_order}
             onChange={(v) => setForm((p) => ({ ...p, sort_order: v }))}
@@ -363,10 +363,10 @@ export default function WidgetsPage() {
               onChange={(e) => setForm((p) => ({ ...p, active: e.target.checked }))}
               className="w-4 h-4 rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
             />
-            Active
+            Activo
           </label>
           <Button type="submit" loading={saving} className="w-full">
-            {editing ? "Save" : "Create"}
+            {editing ? "Guardar" : "Criar"}
           </Button>
         </form>
       </Modal>

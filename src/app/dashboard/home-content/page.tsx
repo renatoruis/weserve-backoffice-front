@@ -20,9 +20,6 @@ export default function HomeContentPage() {
     verse_ref: "",
     live_url: "",
     live_active: false,
-    featured_event_id: "",
-    featured_sermon_id: "",
-    featured_blog_id: "",
   });
   const [pageLoading, setPageLoading] = useState(true);
   const { submit, loading: saving } = useSubmit();
@@ -44,9 +41,6 @@ export default function HomeContentPage() {
             verse_ref: data.verse_ref || "",
             live_url: data.live_url || "",
             live_active: data.live_active || false,
-            featured_event_id: data.featured_event_id || "",
-            featured_sermon_id: data.featured_sermon_id || "",
-            featured_blog_id: data.featured_blog_id || "",
           });
         }
       })
@@ -66,9 +60,6 @@ export default function HomeContentPage() {
         verse_ref: form.verse_ref || null,
         live_url: form.live_url || null,
         live_active: form.live_active,
-        featured_event_id: form.featured_event_id || null,
-        featured_sermon_id: form.featured_sermon_id || null,
-        featured_blog_id: form.featured_blog_id || null,
       },
     });
     if (res) {
@@ -131,34 +122,9 @@ export default function HomeContentPage() {
           />
         </div>
 
-        {/* Featured Content */}
-        <div className="border-t pt-4 mt-4">
-          <h2 className="text-base font-semibold mb-3">Featured Content</h2>
-          <div className="space-y-4">
-            <InputField
-              label="Featured Event ID"
-              value={form.featured_event_id}
-              onChange={set("featured_event_id")}
-              placeholder="Event UUID"
-            />
-            <InputField
-              label="Featured Sermon ID"
-              value={form.featured_sermon_id}
-              onChange={set("featured_sermon_id")}
-              placeholder="Sermon UUID"
-            />
-            <InputField
-              label="Featured Blog Post ID"
-              value={form.featured_blog_id}
-              onChange={set("featured_blog_id")}
-              placeholder="Blog Post UUID"
-            />
-          </div>
-        </div>
-
         {canEdit && (
           <div className="flex items-center gap-3 pt-2">
-            <Button type="submit" loading={saving}>Save</Button>
+            <Button type="submit" loading={saving}>Guardar</Button>
             {saved && <span className="text-sm text-green-600">Saved!</span>}
           </div>
         )}

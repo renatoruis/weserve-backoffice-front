@@ -50,7 +50,7 @@ export default function DataTable({
 
   const handleDelete = async (row: Record<string, unknown>) => {
     if (!onDelete || deletingId) return;
-    if (!confirm("Are you sure you want to delete this item?")) return;
+    if (!confirm("Tem a certeza que quer apagar este item?")) return;
     const id = (row.id || row.bible_id || "") as string;
     setDeletingId(id);
     try {
@@ -76,7 +76,7 @@ export default function DataTable({
               ))}
               {hasActions && (
                 <th className="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide w-32">
-                  Actions
+                  Ações
                 </th>
               )}
             </tr>
@@ -97,7 +97,7 @@ export default function DataTable({
                       <div className="flex justify-end gap-1.5">
                         {onEdit && (
                           <Button variant="secondary" size="sm" onClick={() => onEdit(r)}>
-                            Edit
+                            Editar
                           </Button>
                         )}
                         {onDelete && (
@@ -108,7 +108,7 @@ export default function DataTable({
                             disabled={deletingId !== null}
                             onClick={() => handleDelete(r)}
                           >
-                            Delete
+                            Apagar
                           </Button>
                         )}
                       </div>
@@ -140,11 +140,11 @@ export default function DataTable({
                     </span>
                   </div>
                 ))}
-              {hasActions && (
+                {hasActions && (
                 <div className="flex gap-2 pt-2 border-t border-gray-100">
                   {onEdit && (
                     <Button variant="secondary" size="sm" onClick={() => onEdit(r)} className="flex-1">
-                      Edit
+                      Editar
                     </Button>
                   )}
                   {onDelete && (
@@ -156,7 +156,7 @@ export default function DataTable({
                       onClick={() => handleDelete(r)}
                       className="flex-1"
                     >
-                      Delete
+                      Apagar
                     </Button>
                   )}
                 </div>

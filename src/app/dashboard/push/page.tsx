@@ -51,18 +51,18 @@ export default function PushPage() {
       setTitle("");
       setBody("");
     } else {
-      setError("Failed to send notifications");
+      setError("Erro ao enviar notificações");
     }
   };
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-xl md:text-2xl font-bold mb-1">Push Notifications</h1>
+      <h1 className="text-xl md:text-2xl font-bold mb-1">Notificações Push</h1>
       <p className="text-sm text-gray-500 mb-6">
-        Send push notifications to all subscribed app users.
+        Enviar notificações push para todos os utilizadores da app com subscrição activa.
         {subscriberCount !== null && (
           <span className="ml-1 font-semibold text-gray-700">
-            {subscriberCount} subscriber{subscriberCount !== 1 ? "s" : ""}
+            {subscriberCount} subscrit{subscriberCount !== 1 ? "os" : "o"}
           </span>
         )}
       </p>
@@ -70,17 +70,17 @@ export default function PushPage() {
       {canEdit ? (
         <form onSubmit={handleSend} className="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col gap-4">
           <InputField
-            label="Title"
+            label="Título"
             value={title}
             onChange={setTitle}
-            placeholder="Notification title"
+            placeholder="Título da notificação"
             required
           />
           <TextArea
-            label="Message"
+            label="Mensagem"
             value={body}
             onChange={setBody}
-            placeholder="Notification message..."
+            placeholder="Mensagem da notificação..."
             rows={4}
             required
           />
@@ -89,20 +89,20 @@ export default function PushPage() {
 
           {result && (
             <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-sm">
-              <p className="font-medium text-green-800">Notifications sent!</p>
+              <p className="font-medium text-green-800">Notificações enviadas!</p>
               <p className="text-green-700 mt-1">
-                Sent: {result.sent} | Failed: {result.failed} | Total: {result.total}
+                Enviadas: {result.sent} | Falhadas: {result.failed} | Total: {result.total}
               </p>
             </div>
           )}
 
           <Button type="submit" loading={sending} className="self-start">
-            Send Notification
+            Enviar Notificação
           </Button>
         </form>
       ) : (
         <div className="bg-white rounded-2xl shadow-sm p-4 md:p-6 text-sm text-gray-500">
-          You do not have permission to send push notifications.
+          Não tem permissão para enviar notificações push.
         </div>
       )}
     </div>

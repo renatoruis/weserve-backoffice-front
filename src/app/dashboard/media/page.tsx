@@ -9,6 +9,7 @@ import ImageUpload from "@/components/ImageUpload";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/contexts/auth-context";
 import { hasMinRole } from "@/lib/permissions";
+import BackButton from "@/components/ui/BackButton";
 
 interface MediaItem {
   id: string;
@@ -61,14 +62,6 @@ function FileIcon() {
 
 /* ── BackButton ── */
 
-function BackButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-4">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5" /><polyline points="12 19 5 12 12 5" /></svg>
-      Back
-    </button>
-  );
-}
 
 export default function MediaPage() {
   const { church } = useAuth();
@@ -128,7 +121,7 @@ export default function MediaPage() {
 
   const handleDeleteMedia = async () => {
     if (!selectedMedia) return;
-    if (!confirm("Are you sure you want to delete this file?")) return;
+    if (!confirm("Tem a certeza que quer apagar este item?")) return;
     const res = await submit(`/media/${selectedMedia.id}`, {
       method: "DELETE",
     });
@@ -201,9 +194,7 @@ export default function MediaPage() {
               onChange={(v) => setUploadFolder(v)}
             />
             <div className="flex gap-3 pt-2">
-              <Button type="button" variant="secondary" onClick={goBack}>
-                Cancel
-              </Button>
+              <Button type="button" variant="secondary" onClick={goBack}>Cancelar</Button>
               <Button type="submit" loading={saving} disabled={!uploadUrl}>
                 Upload
               </Button>
@@ -292,13 +283,9 @@ export default function MediaPage() {
 
             {/* Actions */}
             <div className="flex gap-3 pt-2">
-              <Button type="button" variant="secondary" onClick={goBack}>
-                Cancel
-              </Button>
+              <Button type="button" variant="secondary" onClick={goBack}>Cancelar</Button>
               {canEdit && (
-                <Button type="submit" loading={saving}>
-                  Save
-                </Button>
+                <Button type="submit" loading={saving}>Guardar</Button>
               )}
               {canEdit && (
                 <Button
@@ -306,9 +293,7 @@ export default function MediaPage() {
                   variant="danger"
                   onClick={handleDeleteMedia}
                   disabled={saving}
-                >
-                  Delete
-                </Button>
+                >Apagar</Button>
               )}
             </div>
           </form>

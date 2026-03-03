@@ -50,7 +50,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
           onClick={signOut}
           className="text-xs text-red-500 hover:text-red-700 font-medium ml-1 cursor-pointer"
         >
-          Logout
+          Sair
         </button>
       </div>
     </header>

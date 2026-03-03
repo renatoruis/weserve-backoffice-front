@@ -104,7 +104,7 @@ export default function ContactMessagesPage() {
         page={page}
         totalPages={totalPages}
         onPageChange={setPage}
-        emptyTitle="No messages yet"
+        emptyTitle="Nenhuma mensagem ainda"
       />
 
       <Modal

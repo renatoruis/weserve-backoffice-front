@@ -5,7 +5,7 @@ interface EmptyStateProps {
 }
 
 export default function EmptyState({
-  title = "No records found",
+  title = "Nenhum registo encontrado",
   description,
   action,
 }: EmptyStateProps) {

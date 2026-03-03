@@ -2,7 +2,8 @@
 
 import { LogtoProvider, LogtoConfig, useLogto } from "@logto/react";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { AuthContext, Church, UserProfile, ROLE_LEVEL } from "./auth-context";
+import { AuthContext, Church, UserProfile } from "./auth-context";
+import { ROLE_LEVEL } from "@/lib/permissions";
 
 const logtoConfig: LogtoConfig = {
   endpoint: process.env.NEXT_PUBLIC_LOGTO_ENDPOINT!,

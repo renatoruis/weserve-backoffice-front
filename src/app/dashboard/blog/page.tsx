@@ -12,6 +12,7 @@ import Button from "@/components/ui/Button";
 import { useAuth } from "@/contexts/auth-context";
 import { hasMinRole } from "@/lib/permissions";
 import { toDateInputValue } from "@/lib/date";
+import BackButton from "@/components/ui/BackButton";
 
 interface BlogPost {
   id: string;
@@ -49,14 +50,6 @@ const emptyForm = {
   og_image_url: "",
 };
 
-function BackButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-4">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5" /><polyline points="12 19 5 12 12 5" /></svg>
-      Back
-    </button>
-  );
-}
 
 export default function BlogPage() {
   const { data, loading, page, totalPages, setPage, refetch } = useApi<BlogPost>("/blog");
@@ -173,7 +166,7 @@ export default function BlogPage() {
       label: "Status",
       render: (v: unknown) => (
         <Badge variant={v ? "success" : "muted"}>
-          {v ? "Published" : "Draft"}
+          {v ? "Publicado" : "Rascunho"}
         </Badge>
       ),
     },
@@ -230,9 +223,7 @@ export default function BlogPage() {
           </div>
 
           <div className="flex gap-3 pt-2">
-            <Button type="button" onClick={closeForm} className="flex-1 !bg-gray-100 !text-gray-700 hover:!bg-gray-200">
-              Cancel
-            </Button>
+            <Button type="button" onClick={closeForm} className="flex-1 !bg-gray-100 !text-gray-700 hover:!bg-gray-200">Cancelar</Button>
             <Button type="submit" loading={saving} className="flex-1">
               {editing ? "Save" : "Create"}
             </Button>
@@ -249,7 +240,7 @@ export default function BlogPage() {
           <h1 className="text-xl md:text-2xl font-bold">Blog</h1>
           <p className="text-sm text-gray-500 mt-1">Manage blog posts</p>
         </div>
-        {canEdit && <Button onClick={openNew}>+ New Post</Button>}
+        {canEdit && <Button onClick={openNew}>+ Novo Post</Button>}
       </div>
 
       <DataTable

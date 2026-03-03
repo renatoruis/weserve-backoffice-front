@@ -9,15 +9,8 @@ import { InputField } from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/contexts/auth-context";
 import { hasMinRole } from "@/lib/permissions";
+import BackButton from "@/components/ui/BackButton";
 
-function BackButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-4">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5" /><polyline points="12 19 5 12 12 5" /></svg>
-      Back
-    </button>
-  );
-}
 
 interface BlogCategory {
   id: string;
@@ -144,9 +137,7 @@ export default function BlogCategoriesPage() {
             onChange={(v) => setForm((p) => ({ ...p, sort_order: v }))}
           />
           <div className="flex gap-3 pt-2">
-            <Button type="button" onClick={closeForm} className="bg-gray-100 text-gray-700 hover:bg-gray-200">
-              Cancel
-            </Button>
+            <Button type="button" onClick={closeForm} className="bg-gray-100 text-gray-700 hover:bg-gray-200">Cancelar</Button>
             <Button type="submit" loading={saving}>
               {editing ? "Save" : "Create"}
             </Button>
@@ -163,7 +154,7 @@ export default function BlogCategoriesPage() {
           <h1 className="text-xl md:text-2xl font-bold">Blog Categories</h1>
           <p className="text-sm text-gray-500 mt-1">Manage blog categories</p>
         </div>
-        {canEdit && <Button onClick={openNew}>+ New Category</Button>}
+        {canEdit && <Button onClick={openNew}>+ Novo Category</Button>}
       </div>
 
       <DataTable

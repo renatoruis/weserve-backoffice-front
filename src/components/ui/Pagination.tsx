@@ -12,7 +12,7 @@ export default function Pagination({ page, totalPages, onPageChange }: Paginatio
   return (
     <div className="flex items-center justify-between px-1 pt-4">
       <p className="text-xs text-gray-400">
-        Page {page} of {totalPages}
+        Página {page} de {totalPages}
       </p>
       <div className="flex items-center gap-1">
         <button
@@ -20,14 +20,14 @@ export default function Pagination({ page, totalPages, onPageChange }: Paginatio
           disabled={page <= 1}
           className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          Previous
+          Anterior
         </button>
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
           className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          Next
+          Próxima
         </button>
       </div>
     </div>

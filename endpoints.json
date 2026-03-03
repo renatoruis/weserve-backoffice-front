@@ -1,0 +1,959 @@
+{
+  "api": {
+    "base_url": "https://<seu-servidor>",
+    "version": "1.0",
+    "auth": {
+      "type": "Bearer JWT (Logto / OIDC)",
+      "header": "Authorization: Bearer <token>",
+      "note": "Apenas rotas /api/admin/* exigem autenticação"
+    },
+    "notes": {
+      "locale": "Parâmetro ?locale=pt ou ?locale=en disponível em todas as rotas que retornam conteúdo i18n",
+      "pagination": "?limit=10&offset=0 disponível nas rotas de listagem (máx. 50 por página)",
+      "i18n_fields": "Campos _i18n retornam objeto { pt: '...', en: '...' }. Com ?locale=pt, são achatados para string direta"
+    }
+  },
+
+  "public": {
+
+    "health": [
+      {
+        "method": "GET",
+        "path": "/health",
+        "description": "Health check — valida conexões PostgreSQL e Redis",
+        "auth": false,
+        "response_example": { "status": "ok", "checks": { "postgres": "ok", "redis": "ok" } }
+      }
+    ],
+
+    "church": [
+      {
+        "method": "GET",
+        "path": "/api/church",
+        "description": "Perfil completo da igreja: nome, branding, cores, logos, localização, horários, redes sociais",
+        "auth": false,
+        "query_params": {},
+        "cache_ttl": "7 dias"
+      }
+    ],
+
+    "home": [
+      {
+        "method": "GET",
+        "path": "/api/home",
+        "description": "Conteúdo da home: banner, versículo estático, URL live, destaques",
+        "auth": false,
+        "cache_ttl": "7 dias"
+      },
+      {
+        "method": "GET",
+        "path": "/api/home/verse-of-the-day",
+        "description": "Versículo do dia via YouVersion API (fallback para DB)",
+        "auth": false,
+        "query_params": {
+          "locale": "pt | en (default: pt)"
+        },
+        "response_example": {
+          "content": "Porque Deus amou o mundo...",
+          "reference": "João 3:16",
+          "passage_id": "JHN.3.16",
+          "source": "youversion | static"
+        },
+        "cache_ttl": "7 dias"
+      },
+      {
+        "method": "GET",
+        "path": "/api/home/next-event",
+        "description": "Próximo evento futuro",
+        "auth": false,
+        "cache_ttl": "7 dias"
+      },
+      {
+        "method": "GET",
+        "path": "/api/home/latest-sermon",
+        "description": "Sermão mais recente",
+        "auth": false,
+        "cache_ttl": "7 dias"
+      }
+    ],
+
+    "sermons": [
+      {
+        "method": "GET",
+        "path": "/api/sermons",
+        "description": "Lista sermões paginada e filtrável",
+        "auth": false,
+        "query_params": {
+          "limit": "número (default: 10, máx: 50)",
+          "offset": "número (default: 0)",
+          "locale": "pt | en",
+          "from": "data ISO 8601 (ex: 2025-01-01)",
+          "to": "data ISO 8601",
+          "tag": "string",
+          "search": "string (pesquisa no título)"
+        },
+        "response_example": {
+          "data": [],
+          "total": 10,
+          "limit": 10,
+          "offset": 0,
+          "hasMore": false
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/sermons/:id",
+        "description": "Sermão por ID",
+        "auth": false,
+        "query_params": { "locale": "pt | en" }
+      },
+      {
+        "method": "POST",
+        "path": "/api/sermons/:id/view",
+        "description": "Incrementa contador de visualizações do sermão",
+        "auth": false,
+        "response_example": { "view_count": 42 }
+      },
+      {
+        "method": "GET",
+        "path": "/api/sermons/:id/related",
+        "description": "Sermões relacionados (mesmas tags)",
+        "auth": false,
+        "query_params": {
+          "locale": "pt | en",
+          "limit": "número (default: 4, máx: 10)"
+        }
+      }
+    ],
+
+    "events": [
+      {
+        "method": "GET",
+        "path": "/api/events",
+        "description": "Lista eventos futuros — inclui ocorrências expandidas de eventos recorrentes (janela de 90 dias)",
+        "auth": false,
+        "query_params": {
+          "limit": "número (default: 10, máx: 50)",
+          "offset": "número (default: 0)",
+          "locale": "pt | en",
+          "category": "string (ex: worship, study, youth, prayer)",
+          "to": "data ISO 8601 — limite da janela de expansão (default: hoje + 90 dias)"
+        },
+        "notes": [
+          "Eventos com recurrence != 'none' são expandidos automaticamente dentro da janela.",
+          "Cada ocorrência de evento recorrente inclui o campo '_recurring: true'.",
+          "IMPORTANTE: event_end_date = hora de fim do evento NESSE DIA (duração). NÃO é a data de fim da recorrência — para isso usar recurrence_end."
+        ],
+        "response_example": {
+          "data": [
+            {
+              "id": "uuid-master",
+              "title": "Estudo Bíblico",
+              "description": "Estudo do livro de Romanos",
+              "event_date": "2026-03-06T19:30:00.000Z",
+              "event_end_date": "2026-03-06T21:30:00.000Z",
+              "location": "Open Heavens Church, Coimbra, Portugal",
+              "image_url": "https://cdn.example.com/bible-study.webp",
+              "category": "study",
+              "tags": [],
+              "recurrence": "weekly",
+              "recurrence_end": null,
+              "_recurring": true
+            },
+            {
+              "id": "uuid-master",
+              "title": "Culto Dominical",
+              "description": "Culto de adoração e pregação",
+              "event_date": "2026-03-08T10:00:00.000Z",
+              "event_end_date": "2026-03-08T12:00:00.000Z",
+              "location": "Open Heavens Church, Coimbra, Portugal",
+              "image_url": "https://cdn.example.com/sunday-service.png",
+              "category": "worship",
+              "tags": [],
+              "recurrence": "weekly",
+              "recurrence_end": null,
+              "_recurring": true
+            }
+          ],
+          "total": 26,
+          "limit": 10,
+          "offset": 0,
+          "hasMore": true
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/events/:id",
+        "description": "Evento master por ID (registo original, sem expansão de ocorrências)",
+        "auth": false,
+        "query_params": { "locale": "pt | en" }
+      },
+      {
+        "method": "GET",
+        "path": "/api/events/:id/ical",
+        "description": "Download do evento como ficheiro iCalendar (.ics). Eventos recorrentes incluem RRULE correcta.",
+        "auth": false,
+        "response_type": "text/calendar",
+        "note": "Usar como href para download directo. Suporta RRULE: FREQ=WEEKLY, FREQ=WEEKLY;INTERVAL=2, FREQ=MONTHLY, FREQ=MONTHLY;BYDAY=1FR (ex: 1ª sexta), FREQ=YEARLY, com UNTIL se recurrence_end definido."
+      }
+    ],
+
+    "blog": [
+      {
+        "method": "GET",
+        "path": "/api/blog",
+        "description": "Lista posts publicados paginados e filtráveis",
+        "auth": false,
+        "query_params": {
+          "limit": "número (default: 10, máx: 50)",
+          "offset": "número (default: 0)",
+          "locale": "pt | en",
+          "tag": "string",
+          "search": "string",
+          "category": "slug da categoria"
+        },
+        "response_example": {
+          "data": [],
+          "total": 8,
+          "limit": 10,
+          "offset": 0,
+          "hasMore": false
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/blog/:postSlug",
+        "description": "Post por slug",
+        "auth": false,
+        "query_params": { "locale": "pt | en" }
+      },
+      {
+        "method": "GET",
+        "path": "/api/blog/:postSlug/related",
+        "description": "Posts relacionados (mesma categoria ou tags)",
+        "auth": false,
+        "query_params": {
+          "locale": "pt | en",
+          "limit": "número (default: 4, máx: 10)"
+        }
+      }
+    ],
+
+    "generosity": [
+      {
+        "method": "GET",
+        "path": "/api/generosity",
+        "description": "Lista métodos de generosidade/oferta ativos da igreja (MBWAY, IBAN, MB Referência, etc.)",
+        "auth": false,
+        "query_params": { "locale": "pt | en" },
+        "cache_ttl": "7 dias",
+        "response_example": [
+          {
+            "id": "uuid",
+            "type": "mbway",
+            "label": "Dízimos — MBWAY",
+            "description": "Envie o seu dízimo via MBWAY",
+            "phone": "+351 912 345 678",
+            "sort_order": 0
+          },
+          {
+            "id": "uuid",
+            "type": "iban",
+            "label": "Transferência Bancária",
+            "description": null,
+            "holder_name": "Igreja Demo",
+            "iban": "PT50 0000 0000 0000 0000 0000 0",
+            "bic": "CGDIPTPL",
+            "sort_order": 1
+          },
+          {
+            "id": "uuid",
+            "type": "mb_reference",
+            "label": "Referência Multibanco",
+            "description": "Disponível em qualquer ATM",
+            "entity": "21234",
+            "reference": "123 456 789",
+            "sort_order": 2
+          }
+        ],
+        "type_values": ["mbway", "iban", "mb_reference", "other"]
+      }
+    ],
+
+    "notices": [
+      {
+        "method": "GET",
+        "path": "/api/notices",
+        "description": "Lista avisos/anúncios publicados (respeita pinned, sort, expiração)",
+        "auth": false,
+        "query_params": {
+          "limit": "número (default: 10, máx: 50)",
+          "offset": "número (default: 0)",
+          "locale": "pt | en"
+        },
+        "cache_ttl": "7 dias"
+      }
+    ],
+
+    "push_notifications": [
+      {
+        "method": "GET",
+        "path": "/api/push/vapid-key",
+        "description": "Retorna a chave pública VAPID para registar push notifications",
+        "auth": false,
+        "response_example": { "key": "BL4hXXX..." }
+      },
+      {
+        "method": "POST",
+        "path": "/api/push/subscribe",
+        "description": "Regista subscription de push notifications do dispositivo",
+        "auth": false,
+        "body": {
+          "endpoint": "string (URL do push service)",
+          "keys": {
+            "p256dh": "string",
+            "auth": "string"
+          }
+        }
+      }
+    ],
+
+    "prayers": [
+      {
+        "method": "GET",
+        "path": "/api/prayers",
+        "description": "Lista pedidos de oração públicos",
+        "auth": false,
+        "query_params": {
+          "limit": "número (default: 10, máx: 50)",
+          "offset": "número (default: 0)"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/prayers",
+        "description": "Submete um pedido de oração (rate-limited + anti-bot honeypot)",
+        "auth": false,
+        "body": {
+          "name": "string",
+          "body": "string (o pedido)",
+          "public": "boolean (default: false)",
+          "phone": "string (opcional)"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/prayers/:id/pray",
+        "description": "Incrementa contador 'Orei por você' (rate-limited por IP)",
+        "auth": false
+      }
+    ],
+
+    "home_widgets": [
+      {
+        "method": "GET",
+        "path": "/api/home-widgets",
+        "description": "Lista widgets configurados para a home screen",
+        "auth": false,
+        "cache_ttl": "7 dias"
+      }
+    ],
+
+    "resources": [
+      {
+        "method": "GET",
+        "path": "/api/resources",
+        "description": "Lista recursos/downloads (PDFs, docs, etc.)",
+        "auth": false
+      },
+      {
+        "method": "POST",
+        "path": "/api/resources/:id/download",
+        "description": "Incrementa contador de downloads do recurso",
+        "auth": false
+      }
+    ],
+
+    "contact": [
+      {
+        "method": "POST",
+        "path": "/api/contact",
+        "description": "Envio de formulário de contacto",
+        "auth": false,
+        "body": {
+          "name": "string",
+          "email": "string",
+          "message": "string",
+          "subject": "string (opcional)"
+        }
+      }
+    ],
+
+    "bible": [
+      {
+        "method": "GET",
+        "path": "/api/bible/version",
+        "description": "Retorna o bible_id padrão para o locale (definido via env vars BIBLE_ID_PT=129, BIBLE_ID_EN=111)",
+        "auth": false,
+        "query_params": { "locale": "pt | en (default: pt)" },
+        "response_example": { "locale": "pt", "bible_id": 129 },
+        "note": "Chamar primeiro para obter o bible_id a usar nas rotas seguintes"
+      },
+      {
+        "method": "GET",
+        "path": "/api/bible/:bibleId/books",
+        "description": "Lista todos os livros de uma versão bíblica (cache permanente)",
+        "auth": false
+      },
+      {
+        "method": "GET",
+        "path": "/api/bible/:bibleId/passages/:passageId",
+        "description": "Conteúdo de uma passagem bíblica (cache permanente)",
+        "auth": false
+      },
+      {
+        "method": "GET",
+        "path": "/api/bible/:bibleId/chapter/:bookId/:chapterId",
+        "description": "Capítulo completo com todos os versículos (cache permanente)",
+        "auth": false
+      }
+    ]
+  },
+
+  "admin": {
+    "note": "Todas as rotas /api/admin/* exigem header: Authorization: Bearer <JWT>",
+
+    "me": [
+      {
+        "method": "GET",
+        "path": "/api/admin/me/profile",
+        "description": "Perfil do utilizador autenticado",
+        "auth": true
+      }
+    ],
+
+    "church": [
+      {
+        "method": "GET",
+        "path": "/api/admin/churches",
+        "description": "Obter configurações completas da igreja",
+        "auth": true
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/churches",
+        "description": "Atualizar configurações da igreja (branding, cores, localização, redes sociais, analytics, etc.)",
+        "auth": true
+      }
+    ],
+
+    "home": [
+      {
+        "method": "GET",
+        "path": "/api/admin/home",
+        "description": "Obter conteúdo da home",
+        "auth": true
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/home",
+        "description": "Atualizar conteúdo da home",
+        "auth": true
+      }
+    ],
+
+    "sermons": [
+      {
+        "method": "GET",
+        "path": "/api/admin/sermons",
+        "description": "Listar todos os sermões (incluindo não publicados)",
+        "auth": true
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/sermons",
+        "description": "Criar sermão",
+        "auth": true,
+        "body": {
+          "title_i18n": { "pt": "string", "en": "string" },
+          "description_i18n": { "pt": "string", "en": "string" },
+          "youtube_url": "string (opcional)",
+          "pdf_url": "string (opcional)",
+          "tags": ["string"],
+          "sermon_date": "ISO 8601",
+          "materials": [{ "label": "string", "url": "string" }]
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/sermons/:id",
+        "description": "Atualizar sermão",
+        "auth": true
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/admin/sermons/:id",
+        "description": "Eliminar sermão",
+        "auth": true
+      }
+    ],
+
+    "events": [
+      {
+        "method": "GET",
+        "path": "/api/admin/events",
+        "description": "Listar todos os eventos (registos master, sem expansão de recorrências)",
+        "auth": true
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/events",
+        "description": "Criar evento. Para eventos recorrentes definir recurrence != 'none'.",
+        "auth": true,
+        "body": {
+          "title_i18n": { "pt": "string", "en": "string (opcional)" },
+          "description_i18n": { "pt": "string (opcional)", "en": "string (opcional)" },
+          "event_date": "ISO 8601 — data/hora da PRIMEIRA ocorrência (ou única, se recurrence=none)",
+          "event_end_date": "ISO 8601 (opcional) — hora de fim do evento NESSE DIA (ex: +2h). A duração é preservada em todas as ocorrências futuras.",
+          "location": "string (opcional)",
+          "image_url": "string (opcional)",
+          "category": "string (opcional) — ex: worship, study, youth, prayer",
+          "tags": ["string (opcional)"],
+          "recurrence": "none | daily | weekly | biweekly | monthly | monthly_weekday | yearly — default: none",
+          "recurrence_end": "ISO 8601 (opcional) — data a partir da qual a recorrência PARA. null = sem fim. NÃO confundir com event_end_date."
+        },
+        "warning": "event_end_date é a DURAÇÃO do evento (hora de fim no mesmo dia). recurrence_end é quando a recorrência termina. São campos distintos.",
+        "recurrence_values": {
+          "none": "Evento único — sem repetição",
+          "daily": "Todos os dias",
+          "weekly": "Toda a semana no mesmo dia da semana",
+          "biweekly": "De duas em duas semanas no mesmo dia",
+          "monthly": "Todo o mês no mesmo DIA DO MÊS (ex: sempre dia 6)",
+          "monthly_weekday": "Todo o mês na mesma POSIÇÃO+DIA DA SEMANA derivada do event_date (ex: event_date=1ª sexta → sempre 1ª sexta do mês). O frontend não precisa de calcular nada — a API expande automaticamente.",
+          "yearly": "Todos os anos na mesma data"
+        },
+        "examples": {
+          "culto_dominical_semanal": {
+            "title_i18n": { "pt": "Culto Dominical" },
+            "event_date": "2026-03-08T10:00:00Z",
+            "event_end_date": "2026-03-08T12:00:00Z",
+            "recurrence": "weekly",
+            "recurrence_end": null,
+            "category": "worship"
+          },
+          "reuniao_intercessao_primeira_sexta": {
+            "_comment": "Acontece sempre na 1ª sexta-feira do mês. event_date = 6 Mar 2026 = 1ª sexta → a API deriva automaticamente.",
+            "title_i18n": { "pt": "Reunião de Intercessão", "en": "Intercession Meeting" },
+            "event_date": "2026-03-06T21:00:00Z",
+            "event_end_date": "2026-03-06T23:00:00Z",
+            "recurrence": "monthly_weekday",
+            "recurrence_end": null,
+            "category": "prayer"
+          },
+          "estudo_biblico_semanal": {
+            "title_i18n": { "pt": "Estudo Bíblico" },
+            "event_date": "2026-03-06T19:30:00Z",
+            "event_end_date": "2026-03-06T21:30:00Z",
+            "recurrence": "weekly",
+            "recurrence_end": null,
+            "category": "study"
+          },
+          "retiro_anual": {
+            "title_i18n": { "pt": "Retiro Anual" },
+            "event_date": "2026-07-10T09:00:00Z",
+            "event_end_date": "2026-07-12T18:00:00Z",
+            "recurrence": "yearly",
+            "recurrence_end": null,
+            "category": "retreat"
+          },
+          "evento_unico": {
+            "title_i18n": { "pt": "Conferência de Jovens" },
+            "event_date": "2026-04-20T14:00:00Z",
+            "event_end_date": "2026-04-20T20:00:00Z",
+            "recurrence": "none",
+            "category": "youth"
+          }
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/events/:id",
+        "description": "Atualizar evento master — os mesmos campos do POST, todos opcionais. Afecta todas as ocorrências futuras.",
+        "auth": true
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/admin/events/:id",
+        "description": "Eliminar evento master (remove o registo e consequentemente todas as suas ocorrências expandidas)",
+        "auth": true
+      }
+    ],
+
+    "blog": [
+      {
+        "method": "GET",
+        "path": "/api/admin/blog",
+        "description": "Listar todos os posts (incluindo rascunhos)",
+        "auth": true
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/blog",
+        "description": "Criar post",
+        "auth": true,
+        "body": {
+          "title_i18n": { "pt": "string", "en": "string" },
+          "content_i18n": { "pt": "string", "en": "string" },
+          "excerpt_i18n": { "pt": "string", "en": "string" },
+          "slug": "string (único)",
+          "category_id": "uuid (opcional)",
+          "tags": ["string"],
+          "featured": "boolean",
+          "published": "boolean",
+          "published_at": "ISO 8601 (opcional)",
+          "cover_image_url": "string (opcional)"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/blog/:id",
+        "description": "Atualizar post",
+        "auth": true
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/admin/blog/:id",
+        "description": "Eliminar post",
+        "auth": true
+      }
+    ],
+
+    "blog_categories": [
+      {
+        "method": "GET",
+        "path": "/api/admin/blog-categories",
+        "description": "Listar categorias do blog",
+        "auth": true
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/blog-categories",
+        "description": "Criar categoria",
+        "auth": true,
+        "body": {
+          "name_i18n": { "pt": "string", "en": "string" },
+          "slug": "string (único)"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/blog-categories/:id",
+        "description": "Atualizar categoria",
+        "auth": true
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/admin/blog-categories/:id",
+        "description": "Eliminar categoria",
+        "auth": true
+      }
+    ],
+
+    "generosity": [
+      {
+        "method": "GET",
+        "path": "/api/admin/generosity",
+        "description": "Listar todos os métodos de generosidade (incluindo inativos)",
+        "auth": true
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/generosity",
+        "description": "Criar método de generosidade",
+        "auth": true,
+        "body": {
+          "type": "mbway | iban | mb_reference | other",
+          "label_i18n": { "pt": "string", "en": "string (opcional)" },
+          "description_i18n": { "pt": "string (opcional)" },
+          "phone": "string — apenas para type: mbway (ex: +351 912 345 678)",
+          "holder_name": "string — apenas para type: iban",
+          "iban": "string — apenas para type: iban",
+          "bic": "string — apenas para type: iban",
+          "entity": "string — apenas para type: mb_reference",
+          "reference": "string — apenas para type: mb_reference",
+          "is_active": "boolean (default: true)",
+          "sort_order": "número (default: 0)"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/generosity/:id",
+        "description": "Atualizar método de generosidade",
+        "auth": true
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/generosity/:id/toggle",
+        "description": "Ativar/desativar método (inverte is_active)",
+        "auth": true
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/admin/generosity/:id",
+        "description": "Eliminar método de generosidade",
+        "auth": true
+      }
+    ],
+
+    "notices": [
+      {
+        "method": "GET",
+        "path": "/api/admin/notices",
+        "description": "Listar todos os avisos",
+        "auth": true
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/notices",
+        "description": "Criar aviso/anúncio",
+        "auth": true,
+        "body": {
+          "title_i18n": { "pt": "string", "en": "string" },
+          "body_i18n": { "pt": "string (opcional)" },
+          "published": "boolean (default: true)",
+          "pinned": "boolean (default: false)",
+          "sort_order": "número (default: 0)",
+          "notice_type": "string (default: general)",
+          "expires_at": "ISO 8601 (opcional)"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/notices/:id",
+        "description": "Atualizar aviso",
+        "auth": true
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/admin/notices/:id",
+        "description": "Eliminar aviso",
+        "auth": true
+      }
+    ],
+
+    "prayers": [
+      {
+        "method": "GET",
+        "path": "/api/admin/prayers",
+        "description": "Listar todos os pedidos de oração (públicos e privados)",
+        "auth": true
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/prayers/:id",
+        "description": "Atualizar pedido de oração",
+        "auth": true
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/admin/prayers/:id",
+        "description": "Eliminar pedido de oração",
+        "auth": true
+      }
+    ],
+
+    "push": [
+      {
+        "method": "POST",
+        "path": "/api/admin/push/send",
+        "description": "Enviar notificação push para todos os subscritores",
+        "auth": true,
+        "body": {
+          "title": "string",
+          "body": "string",
+          "url": "string (opcional, deep link)"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/admin/push/send",
+        "description": "Listar subscritores de push",
+        "auth": true
+      }
+    ],
+
+    "home_widgets": [
+      {
+        "method": "GET",
+        "path": "/api/admin/home-widgets",
+        "description": "Listar widgets da home",
+        "auth": true
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/home-widgets",
+        "description": "Criar widget",
+        "auth": true
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/home-widgets/:id",
+        "description": "Atualizar widget",
+        "auth": true
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/admin/home-widgets/:id",
+        "description": "Eliminar widget",
+        "auth": true
+      }
+    ],
+
+    "resources": [
+      {
+        "method": "GET",
+        "path": "/api/admin/resources",
+        "description": "Listar recursos/downloads",
+        "auth": true
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/resources",
+        "description": "Criar recurso",
+        "auth": true
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/resources/:id",
+        "description": "Atualizar recurso",
+        "auth": true
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/admin/resources/:id",
+        "description": "Eliminar recurso",
+        "auth": true
+      }
+    ],
+
+    "contact_messages": [
+      {
+        "method": "GET",
+        "path": "/api/admin/contact-messages",
+        "description": "Ver mensagens de contacto recebidas",
+        "auth": true
+      }
+    ],
+
+    "media": [
+      {
+        "method": "GET",
+        "path": "/api/admin/media",
+        "description": "Biblioteca de media (imagens, PDFs, etc.)",
+        "auth": true
+      }
+    ],
+
+    "upload": [
+      {
+        "method": "POST",
+        "path": "/api/admin/upload",
+        "description": "Upload de ficheiro para Cloudflare R2 (máx. 10MB). Retorna URL pública",
+        "auth": true,
+        "content_type": "multipart/form-data",
+        "accepted_types": ["image/*", "application/pdf", ".pptx", ".docx"],
+        "response_example": { "url": "https://r2.example.com/uploads/ficheiro.pdf" }
+      }
+    ],
+
+    "analytics": [
+      {
+        "method": "GET",
+        "path": "/api/admin/analytics/overview",
+        "description": "Visão geral: total de hits, visitantes únicos, breakdown diário",
+        "auth": true,
+        "query_params": { "days": "número (default: 30)" }
+      },
+      {
+        "method": "GET",
+        "path": "/api/admin/analytics/modules",
+        "description": "Ranking de uso por módulo",
+        "auth": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/admin/analytics/content",
+        "description": "Top conteúdos por visualizações",
+        "auth": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/admin/analytics/visitors",
+        "description": "Visitantes únicos por dia (admin vs público)",
+        "auth": true
+      }
+    ],
+
+    "stats": [
+      {
+        "method": "GET",
+        "path": "/api/admin/stats",
+        "description": "Estatísticas gerais da igreja (contagens por módulo)",
+        "auth": true
+      }
+    ],
+
+    "webhooks": [
+      {
+        "method": "GET",
+        "path": "/api/admin/webhooks",
+        "description": "Listar webhooks configurados",
+        "auth": true
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/webhooks",
+        "description": "Criar webhook",
+        "auth": true
+      },
+      {
+        "method": "PUT",
+        "path": "/api/admin/webhooks/:id",
+        "description": "Atualizar webhook",
+        "auth": true
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/admin/webhooks/:id",
+        "description": "Eliminar webhook",
+        "auth": true
+      }
+    ],
+
+    "fonts": [
+      {
+        "method": "GET",
+        "path": "/api/admin/fonts",
+        "description": "Listar fontes disponíveis para personalização",
+        "auth": true
+      }
+    ],
+
+    "google_places": [
+      {
+        "method": "GET",
+        "path": "/api/admin/google/places/autocomplete",
+        "description": "Proxy Google Places autocomplete (para selecionar morada da igreja)",
+        "auth": true,
+        "query_params": { "input": "string" }
+      },
+      {
+        "method": "GET",
+        "path": "/api/admin/google/places/details",
+        "description": "Proxy Google Places detalhes de um lugar",
+        "auth": true,
+        "query_params": { "place_id": "string" }
+      }
+    ]
+  }
+}
