@@ -20,10 +20,10 @@ function FullScreenSpinner({ message }: { message?: string }) {
 function AccessDenied({ onSignOut }: { onSignOut: () => void }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-      <div className="text-center max-w-sm px-6">
-        <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-5">
+      <div className="text-center max-w-sm w-full px-6">
+        <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-5">
           <svg
-            className="w-7 h-7 text-red-400"
+            className="w-7 h-7 text-red-500"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
@@ -36,17 +36,29 @@ function AccessDenied({ onSignOut }: { onSignOut: () => void }) {
             />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-white mb-2">Acesso não autorizado</h2>
-        <p className="text-sm text-gray-400 mb-6">
+
+        <h2 className="text-xl font-semibold text-[var(--color-text)] mb-2">
+          Acesso não autorizado
+        </h2>
+        <p className="text-sm text-[var(--color-text-muted)] mb-8 leading-relaxed">
           A sua conta não tem permissões para aceder a este backoffice.
           Contacte o administrador da sua organização.
         </p>
-        <button
-          onClick={onSignOut}
-          className="px-5 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-sm text-white transition-colors cursor-pointer"
-        >
-          Sair da conta
-        </button>
+
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={onSignOut}
+            className="w-full px-5 py-2.5 rounded-lg bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-sm font-medium text-white transition-colors cursor-pointer"
+          >
+            Sair da conta
+          </button>
+          <a
+            href="/"
+            className="w-full px-5 py-2.5 rounded-lg border border-gray-300 hover:bg-gray-100 text-sm font-medium text-[var(--color-text)] transition-colors text-center"
+          >
+            Voltar ao início
+          </a>
+        </div>
       </div>
     </div>
   );
